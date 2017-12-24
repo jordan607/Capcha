@@ -1,0 +1,128 @@
+======================================Offline Captcha==============================================================
+SimpleCaptchaDemo
+       |
+       |-------->WEB-INF
+       |           |------>web.xml
+       |           |------>lib
+       |                    |----->simplecaptcha-1.2-jdk1.5.jar
+       |-->index.jsp
+       |-->process.jsp
+
+
+web.xml
+---------
+<web-app>
+ <servlet>
+   <servlet-name>demo</servlet-name>
+   <servlet-class> nl.captcha.servlet.StickyCaptchaServlet</servlet-class>
+ </servlet>
+
+ <servlet-mapping>
+  <servlet-name>demo</servlet-name>
+  <url-pattern>/stickyImage</url-pattern>
+ </servlet-mapping>
+</web-app>
+
+index.jsp
+----------
+<img src="stickyImage" />
+<form action="process.jsp">
+Your Answer<input type="text" name="answer"><br>
+<input type="submit" name="submit"/><br>
+</form>
+
+process.jsp
+------------
+<%@page import="nl.captcha.Captcha"%>
+<%
+Captcha captcha=(Captcha)session.getAttribute(Captcha.NAME);
+request.setCharacterEncoding("UTF-8");
+
+String answer=request.getParameter("answer");
+
+if(captcha.isCorrect(answer))
+       out.println("Correct");
+
+else out.println("Incorrect");
+%>
+===========================================Online Captcha===========================================================
+Creating Capcha in your Application using google Re-Captcha
+
+MyOnlineCapcha
+     |---->WEB-INF
+     |       |------>web.xml
+     |       |------>lib
+     |	              |----->recaptcha4j-0.0.7.jar
+     |------>index.jsp
+     |------>process.jsp
+
+
+1.Open the below link and Click GET reCAPTCHA Link 
+  http://www.google.com/recaptcha
+
+2.Click on "Sign up Now!" button and signup  to Your gmail Account inorder to use Re-Captcha
+
+3.Create a reCAPTCHA Key.
+  Enter a domain(can be anything,non-existing as well),
+  Select Enable this key on all domains.Otherwise the capcha will work only on your domain,if you want to use them in all other domains you must select them as well.
+  Click on create Key.
+
+4.Download the re-Captcha library from the below link
+  http://code.google.com/p/recaptcha/downloads/list?q=label:java-Latest
+
+5.Create a New web Project.Include the jars into the project
+   To show the image in index.jsp.Include the following
+   index.jsp
+   ----------
+<%@ page import="net.tanesha.recaptcha.ReCaptcha" %>
+    <%@ page import="net.tanesha.recaptcha.ReCaptchaFactory" %>
+
+    <html>
+      <body>
+        <form action="process.jsp" method="post">
+        <%
+          ReCaptcha c = ReCaptchaFactory.newReCaptcha("your_public_key", "your_private_key", false);
+          out.print(c.createRecaptchaHtml(null, null));
+        %>
+        <input type="submit" value="submit" />
+        </form>
+      </body>
+    </html>
+
+6.Write the following code to process the capcha in process.jsp
+
+To Process the answer in process.jsp
+
+process.jsp
+-----------
+<%@ page import="net.tanesha.recaptcha.ReCaptchaImpl" %>
+    <%@ page import="net.tanesha.recaptcha.ReCaptchaResponse" %>
+
+    <html>
+      <body>
+      <%
+        String remoteAddr = request.getRemoteAddr();
+        ReCaptchaImpl reCaptcha = new ReCaptchaImpl();
+        reCaptcha.setPrivateKey("your_private_key");
+
+        String challenge = request.getParameter("recaptcha_challenge_field");
+        String uresponse = request.getParameter("recaptcha_response_field");
+        ReCaptchaResponse reCaptchaResponse = reCaptcha.checkAnswer(remoteAddr, challenge, uresponse);
+
+        if (reCaptchaResponse.isValid()) {
+          out.print("Answer was entered correctly!");
+        } else {
+          out.print("Answer is wrong");
+        }
+      %>
+      </body>
+    </html>
+
+web.xml
+--------
+<web-app>
+  <welcome-file-list>
+    <welcome-file>index.jsp</welcome-file>
+  </welcome-file-list>
+</web-app>
+================================================================================================================
